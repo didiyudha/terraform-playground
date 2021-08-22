@@ -44,6 +44,12 @@ output "nodered1_address" {
 
 # Print list of container name 
 output "container_names" {
-  value = docker_container.nodered[*].name
+  value       = docker_container.nodered[*].name
   description = "List of nodered container names"
+}
+
+# Print ip address
+output "ip_address" {
+  value       = [for c in docker_container.nodered[*] : join(":", c.ip_address[*], c.ports[*]["external"])]
+  description = "Nodered IP address"
 }
