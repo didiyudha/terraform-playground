@@ -17,51 +17,27 @@ resource "docker_image" "nodered" {
   keep_locally = true
 }
 
-# Run docker container
-resource "docker_container" "nodered" {
-  name  = "nodered"
-  image = docker_image.nodered.latest
-
-  ports {
-    internal = 1880
-    external = 1880
-  }
-}
-
-resource "docker_container" "nodered-2" {
-  name  = join("-", ["nodered", random_string.randomstr.result])
-  image = docker_image.nodered.latest
-
-  ports {
-    internal = 1880
-  }
-}
-
 # Random string.
 resource "random_string" "randomstr" {
+  count   = 2
   length  = 4
   special = false
   upper   = false
 }
 
-# Print container ip address
-output "nodered_ip" {
-  value       = docker_container.nodered.ip_address
-  description = "The IP address of the nodered container"
+# Run docker container
+resource "docker_container" "nodered" {
+  count = 2
+  name  = join("-", ["nodered", random_string.randomstr[count.index].result])
+  image = docker_image.nodered.latest
+
+  ports {
+    internal = 1880
+  }
 }
 
-# Print container name
-output "nodered_container_name" {
-  value       = docker_container.nodered.name
-  description = "The container name of the nodered container"
-}
-
-output "nodered_2_container_name" {
-  value       = docker_container.nodered-2.name
-  description = "The container name of the nodered 2 container"
-}
-
-output "nodered_address" {
-  value       = join(":", [docker_container.nodered.ip_address, docker_container.nodered.ports[0].external])
-  description = "Nodered address"
+# Print nodered container-1 address
+output "nodered1_address" {
+  value       = join(":", [docker_container.nodered[0].ip_address, docker_container.nodered[0].ports[0].internal])
+  description = "nodered-1 address"
 }
